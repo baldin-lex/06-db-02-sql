@@ -72,7 +72,7 @@ Type "help" for help.
 test_db=# 
 ```
 
-
+---
 ## Задача 2
 
 В БД из задачи 1: 
@@ -99,9 +99,93 @@ test_db=#
 Приведите:
 
 - итоговый список БД после выполнения пунктов выше;
+```
+test_db=# \l
+                                   List of databases
+   Name    | Owner  | Encoding |  Collate   |   Ctype    |      Access privileges      
+-----------+--------+----------+------------+------------+-----------------------------
+ postgres  | baldin | UTF8     | en_US.utf8 | en_US.utf8 | 
+ template0 | baldin | UTF8     | en_US.utf8 | en_US.utf8 | =c/baldin                  +
+           |        |          |            |            | baldin=CTc/baldin
+ template1 | baldin | UTF8     | en_US.utf8 | en_US.utf8 | =c/baldin                  +
+           |        |          |            |            | baldin=CTc/baldin
+ test_db   | baldin | UTF8     | en_US.utf8 | en_US.utf8 | =Tc/baldin                 +
+           |        |          |            |            | baldin=CTc/baldin          +
+           |        |          |            |            | "test-simple-user"=c/baldin
+(4 rows)
+```
 - описание таблиц (describe);
+```
+test_db=# \d clients
+                                       Table "public.clients"
+      Column       |       Type        | Collation | Nullable |               Default               
+-------------------+-------------------+-----------+----------+-------------------------------------
+ id                | integer           |           | not null | nextval('clients_id_seq'::regclass)
+ фамилия           | character varying |           |          | 
+ страна проживания | character varying |           |          | 
+ заказ             | integer           |           |          | 
+Indexes:
+    "clients_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "clients_заказ_fkey" FOREIGN KEY ("заказ") REFERENCES orders(id)
+```
+```
+test_db=# \d orders
+                                    Table "public.orders"
+    Column    |       Type        | Collation | Nullable |              Default               
+--------------+-------------------+-----------+----------+------------------------------------
+ id           | integer           |           | not null | nextval('orders_id_seq'::regclass)
+ наименование | character varying |           |          | 
+ цена         | integer           |           |          | 
+Indexes:
+    "orders_pkey" PRIMARY KEY, btree (id)
+Referenced by:
+    TABLE "clients" CONSTRAINT "clients_заказ_fkey" FOREIGN KEY ("заказ") REFERENCES orders(id)
+```
 - SQL-запрос для выдачи списка пользователей с правами над таблицами test_db;
 - список пользователей с правами над таблицами test_db.
+```console
+test_db=# SELECT grantee, table_name, privilege_type FROM information_schema.table_privileges WHERE table_name IN ('orders','clients');
+     grantee      | table_name | privilege_type 
+------------------+------------+----------------
+ baldin           | orders     | INSERT
+ baldin           | orders     | SELECT
+ baldin           | orders     | UPDATE
+ baldin           | orders     | DELETE
+ baldin           | orders     | TRUNCATE
+ baldin           | orders     | REFERENCES
+ baldin           | orders     | TRIGGER
+ test-admin-user  | orders     | INSERT
+ test-admin-user  | orders     | SELECT
+ test-admin-user  | orders     | UPDATE
+ test-admin-user  | orders     | DELETE
+ test-admin-user  | orders     | TRUNCATE
+ test-admin-user  | orders     | REFERENCES
+ test-admin-user  | orders     | TRIGGER
+ test-simple-user | orders     | INSERT
+ test-simple-user | orders     | SELECT
+ test-simple-user | orders     | UPDATE
+ test-simple-user | orders     | DELETE
+ baldin           | clients    | INSERT
+ baldin           | clients    | SELECT
+ baldin           | clients    | UPDATE
+ baldin           | clients    | DELETE
+ baldin           | clients    | TRUNCATE
+ baldin           | clients    | REFERENCES
+ baldin           | clients    | TRIGGER
+ test-admin-user  | clients    | INSERT
+ test-admin-user  | clients    | SELECT
+ test-admin-user  | clients    | UPDATE
+ test-admin-user  | clients    | DELETE
+ test-admin-user  | clients    | TRUNCATE
+ test-admin-user  | clients    | REFERENCES
+ test-admin-user  | clients    | TRIGGER
+ test-simple-user | clients    | INSERT
+ test-simple-user | clients    | SELECT
+ test-simple-user | clients    | UPDATE
+ test-simple-user | clients    | DELETE
+(36 rows)
+```
 
 ## Задача 3
 
