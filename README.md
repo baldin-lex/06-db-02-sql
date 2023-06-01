@@ -7,6 +7,72 @@
 
 Приведите получившуюся команду или docker-compose-манифест.
 
+## Решение:
+
+*Содержимое docker-compose.yaml*
+```
+version: '3'
+
+volumes:
+  data: {}
+  backup: {}
+
+services:
+
+  postgres:
+    image: postgres:12
+    container_name: postgres
+    ports:
+      - "0.0.0.0:5432:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+      - backup:/media/postgresql/backup
+    environment:
+      POSTGRES_USER: "baldin"
+      POSTGRES_PASSWORD: "qwerty"
+      POSTGRES_DB: "test_db"
+    restart: always
+```
+*Запускаю:*
+```console
+[admin@hw-06-02-docker ~]$ docker-compose up -d
+Creating network "admin_default" with the default driver
+Creating volume "admin_database_volume" with default driver
+Creating volume "admin_backup_volume" with default driver
+Pulling db (postgres:12)...
+12: Pulling from library/postgres
+f03b40093957: Pull complete
+9d674c93414d: Pull complete
+de781e8e259a: Pull complete
+5ea6efaf51f6: Pull complete
+b078d5f4ac82: Pull complete
+97f84fb2a918: Pull complete
+5a6bf2f43fb8: Pull complete
+f1a40e88fea4: Pull complete
+ea9811dc38ae: Pull complete
+515634916e47: Pull complete
+81b43500849b: Pull complete
+800a983fb77c: Pull complete
+3ecd088e33c5: Pull complete
+Digest: sha256:7db33237a29afa0a62998b7b6707bfe99766e9da02b5780f8db8f773b85c8f33
+Status: Downloaded newer image for postgres:12
+Creating postgres ... done
+```
+*Иду в контейнер:*
+```console
+[admin@hw-06-02-docker ~]$ sudo docker exec -it postgres bash
+root@f5b11e40a0c6:/# 
+```
+*Подключаюсь к базе:*
+```console
+baldin@42a9c452187f:/$ psql test_db -U baldin
+psql (12.15 (Debian 12.15-1.pgdg110+1))
+Type "help" for help.
+
+test_db=# 
+```
+
+
 ## Задача 2
 
 В БД из задачи 1: 
