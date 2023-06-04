@@ -333,4 +333,152 @@ test_db=# EXPLAIN SELECT* FROM clients WHERE заказ IS NOT NULL;
 Приведите список операций, который вы применяли для бэкапа данных и восстановления. 
 
 ## Решение:
+*Создаю бэкап*
+```bash
+pg_dumpall -U baldin > /home/backup/test_db.backup
+```
+*Останавливаю контейнер (проверяю, что нет запущенных контейнеров)*
+```bash
+[admin@hw-06-02-docker ~]$ docker stop postgres
+postgres
+[admin@hw-06-02-docker ~]$ docker ps -a
+CONTAINER ID   IMAGE         COMMAND                  CREATED          STATUS                     PORTS     NAMES
+```
+*Поднимаю новый контейнер с чистой БД*
+```bash
+[admin@hw-06-02-docker ~]$ docker run --rm -d -e POSTGRES_USER=baldin -e POSTGRES_PASSWORD=qwerty -e POSTGRES_DB=test_db --name postgres2 postgres:12
+```
+*Копирую дамп в новый контейнер*
+```bash
+[admin@hw-06-02-docker ~]$ docker cp postgres:/home/backup/test_db.backup backup/ && docker cp backup/test_db.backup postgres2:/home/
+Successfully copied 8.7kB to /home/admin/backup/
+Successfully copied 8.7kB to postgres2:/home/
+```
+*Восстанавливаю БД из файла*
+```bash
+root@690fb9fc0534:/# psql -U baldin -d test_db -f /home/test_db.backup
+SET
+SET
+SET
+psql:/home/test_db.backup:14: ERROR:  role "baldin" already exists
+ALTER ROLE
+CREATE ROLE
+ALTER ROLE
+CREATE ROLE
+ALTER ROLE
+You are now connected to database "template1" as user "baldin".
+SET
+SET
+SET
+SET
+SET
+ set_config 
+------------
+ 
+(1 row)
 
+SET
+SET
+SET
+SET
+You are now connected to database "postgres" as user "baldin".
+SET
+SET
+SET
+SET
+SET
+ set_config 
+------------
+ 
+(1 row)
+
+SET
+SET
+SET
+SET
+SET
+SET
+SET
+SET
+SET
+ set_config 
+------------
+ 
+(1 row)
+
+SET
+SET
+SET
+SET
+psql:/home/test_db.backup:112: ERROR:  database "test_db" already exists
+ALTER DATABASE
+You are now connected to database "test_db" as user "baldin".
+SET
+SET
+SET
+SET
+SET
+ set_config 
+------------
+ 
+(1 row)
+
+SET
+SET
+SET
+SET
+SET
+SET
+CREATE TABLE
+ALTER TABLE
+CREATE SEQUENCE
+ALTER TABLE
+ALTER SEQUENCE
+CREATE TABLE
+ALTER TABLE
+CREATE SEQUENCE
+ALTER TABLE
+ALTER SEQUENCE
+ALTER TABLE
+ALTER TABLE
+COPY 5
+COPY 5
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+ALTER TABLE
+GRANT
+GRANT
+GRANT
+GRANT
+```
+*В результате*
+```bash
+root@690fb9fc0534:/# psql -U baldin -d test_db
+psql (12.15 (Debian 12.15-1.pgdg110+1))
+Type "help" for help.
+
+test_db=# \l
+                              List of databases
+   Name    | Owner  | Encoding |  Collate   |   Ctype    | Access privileges 
+-----------+--------+----------+------------+------------+-------------------
+ postgres  | baldin | UTF8     | en_US.utf8 | en_US.utf8 | 
+ template0 | baldin | UTF8     | en_US.utf8 | en_US.utf8 | =c/baldin        +
+           |        |          |            |            | baldin=CTc/baldin
+ template1 | baldin | UTF8     | en_US.utf8 | en_US.utf8 | =c/baldin        +
+           |        |          |            |            | baldin=CTc/baldin
+ test_db   | baldin | UTF8     | en_US.utf8 | en_US.utf8 | 
+(4 rows)
+
+test_db=# 
+```
