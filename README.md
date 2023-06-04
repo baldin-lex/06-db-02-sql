@@ -13,10 +13,6 @@
 ```yaml
 version: '3'
 
-volumes:
-  data: {}
-  backup: {}
-
 services:
 
   postgres:
@@ -32,6 +28,10 @@ services:
       POSTGRES_PASSWORD: "qwerty"
       POSTGRES_DB: "test_db"
     restart: always
+
+volumes:
+  data:
+  backup:
 ```
 *Запускаю:*
 ```bash
